@@ -1,3 +1,7 @@
+# Dependencies - NEVER commit these
+node_modules/
+frontend/node_modules/
+
 # Logs
 logs
 *.log
