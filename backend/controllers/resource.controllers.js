@@ -172,3 +172,15 @@ export const deleteResource = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+
+// ================= Utility =======================
+export const fetchResourceById = async (id) => {
+  try {
+    const resource = await Resource.findById(id);
+    return { success: true, data: resource };
+  } catch (error) {
+    console.error("Error in fetching resource:", error.message);
+    return { success: false, message: "Error fetching resource" };
+  }
+};

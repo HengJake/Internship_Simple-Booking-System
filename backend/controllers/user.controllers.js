@@ -15,9 +15,11 @@ export const createUser = async (req, res) => {
   const user = req.body;
 
   if (!user.name || !user.email || !user.password) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Please provide all fields" });
+    return res.status(404).json({
+      success: false,
+      message: "Please provide all fields",
+      data: "",
+    });
   }
 
   try {
@@ -34,6 +36,7 @@ export const createUser = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: `User with this ${conflictField} already exists`,
+        data: "",
       });
     }
 
@@ -42,7 +45,7 @@ export const createUser = async (req, res) => {
     res.status(201).json({ success: true, data: newUser });
   } catch (error) {
     console.error("Error in create user : ", error.message);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, message: "Server Error", data: "" });
   }
 };
 
@@ -78,5 +81,43 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     console.log("Error in deleting user : ", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// =============== Utility function ===============
+
+export const loginUser = async (req, res) => {
+  const user = req.body;
+
+  // Find user
+  const checkedUser = await User.findOne({ email: user.email });
+
+  if (!checkedUser) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Email not found", data: "" });
+  }
+
+  // Compare passwords directly
+  if (checkedUser.password !== user.password) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Incorrect password", data: "" });
+  }
+
+  res.json({
+    success: true,
+    message: `Welcome back ${checkedUser.name}`,
+    data: checkedUser,
+  });
+};
+
+export const fetchUserById = async (id) => {
+  try {
+    const user = await User.findById(id);
+    return { success: true, data: user };
+  } catch (error) {
+    console.error("Error in fetching user:", error.message);
+    return { success: false, message: "Error fetching user" };
   }
 };

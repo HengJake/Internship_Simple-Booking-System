@@ -3,11 +3,23 @@ import Booking from "../models/booking.model.js"; // Adjust path if needed
 import Resource from "../models/resource.model.js";
 import User from "../models/user.model.js";
 import {
-  convertAvailabilityToUTC,
+  convertUTCToMalaysiaISOString,
   convertUTCToMalaysiaTime,
-} from "../DateTimeConversion.js";
+  convertMalaysiaTimeISOToUTC,
+} from "../../utility/DateTimeConversion.js";
+import { fetchResourceById } from "./resource.controllers.js";
+import { fetchUserById } from "./user.controllers.js";
 
 async function validateBooking(booking, checkUserConflict = false) {
+  const checkResource = await Resource.findById(booking.resourceId);
+  if (!checkResource) {
+    return { valid: false, message: "Resource not found" };
+  }
+  const checkUser = await User.findById(booking.userId);
+  if (!checkUser) {
+    return { valid: false, message: "User not found" };
+  }
+
   const { resourceId, userId, startTime, endTime } = booking;
 
   const start = new Date(startTime);
@@ -81,9 +93,14 @@ async function validateBooking(booking, checkUserConflict = false) {
 
   const startHour = convertUTCToMalaysiaTime(start);
   const endHour = convertUTCToMalaysiaTime(end);
-
-  console.log(startHour);
-  console.log(convertAvailabilityToUTC(bookingDay, availability.startTime));
+  availability.startTime = convertUTCToMalaysiaISOString(
+    availability.dayOfWeek,
+    availability.startTime
+  );
+  availability.endTime = convertUTCToMalaysiaISOString(
+    availability.dayOfWeek,
+    availability.endTime
+  );
 
   if (startHour < availability.startTime || endHour > availability.endTime) {
     return {
@@ -92,7 +109,7 @@ async function validateBooking(booking, checkUserConflict = false) {
     };
   }
 
-  return { valid: false };
+  return { valid: true };
 }
 
 // Get all bookings
@@ -134,7 +151,7 @@ export const createBooking = async (req, res) => {
   } catch (error) {
     return res
       .status(404)
-      .json({ success: false, message: `Resource ID not found` });
+      .json({ success: false, message: `Resource not found` });
   }
 
   try {
@@ -190,89 +207,88 @@ export const updateBooking = async (req, res) => {
     });
   }
 
-  try {
-    const resource = await Resource.findById(updatedData.resourceId);
-    if (!resource) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Resource not found" });
-    }
-
-    // Validate date fields if provided
-    if (updatedData.startTime && updatedData.endTime) {
-      const start = new Date(updatedData.startTime);
-      const end = new Date(updatedData.endTime);
-
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid date format" });
-      }
-
-      if (start >= end) {
-        return res.status(400).json({
-          success: false,
-          message: "startTime must be before endTime",
-        });
-      }
-
-      // ========================checking for conflict========================
-      const bookingDay = start.getDay();
-      const availability = resource.availability.find(
-        (a) => a.dayOfWeek === bookingDay
-      );
-
-      if (!availability) {
-        return res.status(400).json({
-          success: false,
-          message: "Resource not available on this day",
-        });
-      }
-
-      const formatTime = (date) => date.toISOString().substr(11, 5);
-      const startHour = formatTime(start);
-      const endHour = formatTime(end);
-
-      if (
-        startHour < availability.startTime ||
-        endHour > availability.endTime
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: `Booking must be between ${availability.startTime} and ${availability.endTime}`,
-        });
-      }
-
-      // Check for booking conflicts (exclude the current booking by id)
-      const conflictingBooking = await Booking.findOne({
-        _id: { $ne: id }, // exclude current booking
-        resourceId: updatedData.resourceId,
-        $or: [{ startTime: { $lt: end }, endTime: { $gt: start } }],
-      });
-
-      if (conflictingBooking) {
-        return res.status(409).json({
-          success: false,
-          message: "Booking conflicts with an existing booking",
-        });
-      }
-    }
-    // =================================================
-
-    try {
-      const updatedBooking = await Booking.findByIdAndUpdate(id, updatedData, {
-        new: true,
-      });
-
-      res.status(200).json({ success: true, data: updatedBooking });
-    } catch (error) {
-      console.error("Error updating booking:", error.message);
-      res.status(500).json({ success: false, message: "Server Error" });
-    }
-  } catch (error) {
+  const resource = await Resource.findById(updatedData.resourceId);
+  if (!resource) {
     return res
       .status(404)
       .json({ success: false, message: "Resource not found" });
+  }
+
+  // Validate date fields if provided
+  if (updatedData.startTime && updatedData.endTime) {
+    const start = new Date(updatedData.startTime);
+    const end = new Date(updatedData.endTime);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid date format" });
+    }
+
+    if (start >= end) {
+      return res.status(400).json({
+        success: false,
+        message: "startTime must be before endTime",
+      });
+    }
+
+    // ========================checking for conflict========================
+    const bookingDay = start.getDay();
+    const availability = resource.availability.find(
+      (a) => a.dayOfWeek === bookingDay
+    );
+
+    if (!availability) {
+      return res.status(400).json({
+        success: false,
+        message: "Resource not available on this day",
+      });
+    }
+
+    const startHour = convertUTCToMalaysiaTime(start);
+    const endHour = convertUTCToMalaysiaTime(end);
+
+    let availableStartTime = convertUTCToMalaysiaISOString(
+      availability.dayOfWeek,
+      availability.startTime
+    );
+
+    let availableEndTime = convertUTCToMalaysiaISOString(
+      availability.dayOfWeek,
+      availability.endTime
+    );
+
+    if (startHour < availableStartTime || endHour > availableEndTime) {
+      return res.status(400).json({
+        success: false,
+        message: `Booking must be between ${availability.startTime} and ${availability.endTime}`,
+      });
+    }
+
+    // Check for booking conflicts (exclude the current booking by id)
+    const conflictingBooking = await Booking.findOne({
+      _id: { $ne: id }, // exclude current booking
+      resourceId: updatedData.resourceId,
+      $or: [{ startTime: { $lt: end }, endTime: { $gt: start } }],
+    });
+
+    if (conflictingBooking) {
+      return res.status(409).json({
+        success: false,
+        message: "Booking conflicts with an existing booking",
+      });
+    }
+  }
+  // =================================================
+
+  try {
+    const updatedBooking = await Booking.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+    res.status(200).json({ success: true, data: updatedBooking });
+  } catch (error) {
+    console.error("Error updating booking:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
@@ -293,5 +309,62 @@ export const deleteBooking = async (req, res) => {
   } catch (error) {
     console.error("Error deleting booking:", error.message);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+// ============ More Utils ============
+
+export const readDetailedBooking = async (req, res) => {
+  try {
+    const bookings = await Booking.find({})
+      .populate("userId")
+      .populate("resourceId");
+
+    const detailedBookings = await Promise.all(
+      bookings.map(async (booking) => {
+        const user = await fetchUserById(booking.userId);
+        const resource = await fetchResourceById(booking.resourceId);
+
+        // console.log(user)
+        // console.log(resource)
+
+        return {
+          _id: booking._id,
+          startTime: booking.startTime,
+          endTime: booking.endTime,
+          status: booking.status,
+          createdAt: booking.createdAt,
+          updatedAt: booking.updatedAt,
+          user: user,
+          resource: resource,
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, data: detailedBookings });
+  } catch (error) {
+    console.error("Error fetching bookings:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export const getBookingsByResource = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid resource ID" });
+  }
+
+  try {
+    const bookings = await Booking.find({ resourceId: id });
+
+    // convert UTC to Malaysia time UCT+8
+    bookings.map((booking) => {
+      console.log(convertUTCToMalaysiaTime(booking.startTime))
+    })
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching bookings", error });
   }
 };
