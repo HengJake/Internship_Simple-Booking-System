@@ -6,6 +6,7 @@ import {
   convertUTCToMalaysiaISOString,
   convertUTCToMalaysiaTime,
   convertMalaysiaTimeISOToUTC,
+  convertMalaysiaTimeToUTC,
 } from "../../utility/DateTimeConversion.js";
 import { fetchResourceById } from "./resource.controllers.js";
 import { fetchUserById } from "./user.controllers.js";
@@ -24,7 +25,7 @@ async function validateBooking(booking, checkUserConflict = false) {
 
   const start = new Date(startTime);
   const end = new Date(endTime);
-  const now = new Date();
+  const now = convertMalaysiaTimeToUTC(new Date());
 
   //   ensure no empty data
 
@@ -129,6 +130,7 @@ export const readBooking = async (req, res) => {
 // Create a new booking
 export const createBooking = async (req, res) => {
   const booking = req.body;
+
 
   // Validate required fields
   if (
@@ -357,12 +359,6 @@ export const getBookingsByResource = async (req, res) => {
 
   try {
     const bookings = await Booking.find({ resourceId: id });
-
-    // convert UTC to Malaysia time UCT+8
-    bookings.map((booking) => {
-      console.log(convertUTCToMalaysiaTime(booking.startTime))
-    })
-
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: "Error fetching bookings", error });

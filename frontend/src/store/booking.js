@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { convertUTCToMalaysiaTime } from "../../../utility/DateTimeConversion";
+import {
+  convertUTCToMalaysiaTime,
+  convertMalaysiaTimeISOToUTC,
+} from "../../../utility/DateTimeConversion";
 import { convertOffsetToTimes } from "framer-motion";
 
 export const useBookingStore = create((set) => ({
@@ -14,8 +17,38 @@ export const useBookingStore = create((set) => ({
       return { success: false, message: "All fields are required" };
     }
 
-    console.log(newBooking);
-    return { success: false, message: "Testing" };
+    const startDateTime = convertMalaysiaTimeISOToUTC(
+      new Date(
+        `${newBooking.dayOfWeek}T${newBooking.startTime}:00`
+      ).toISOString()
+    ).toISOString();
+    const endDateTime = convertMalaysiaTimeISOToUTC(
+      new Date(`${newBooking.dayOfWeek}T${newBooking.endTime}:00`).toISOString()
+    ).toISOString();
+
+    newBooking.startTime = startDateTime;
+    newBooking.endTime = endDateTime;
+
+    const res = await fetch(`/api/bookings/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newBooking),
+    });
+
+    const data = await res.json();
+
+    console.log(data.message);
+
+    if (!data.success) {
+      return { success: false, message: "Error creating new booking" };
+    }
+
+    set((state) => ({
+      bookings: [...state.bookings, data.data],
+    }));
+    return { success: true, message: "New Booking Created" };
   },
   getBooking: async () => {
     const res = await fetch("/api/bookings");
