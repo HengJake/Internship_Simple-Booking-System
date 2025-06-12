@@ -1,6 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { Routes, Route } from "react-router-dom";
-import NavBar from "./component/NavBar.jsx";
+import NavBar from "./component/Navbar.jsx";
 import NewBooking from "./pages/NewBooking";
 import Login from "./pages/Login";
 import MyBooking from "./pages/MyBooking";
