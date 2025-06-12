@@ -52,12 +52,32 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const user = req.body;
+  const name = user.name;
+  const email = user.email;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ success: false, message: "Invalid user ID" });
   }
 
   try {
+    // Check for duplicate name (exclude current user)
+    const existingName = await User.findOne({ name, _id: { $ne: id } });
+    if (existingName) {
+      return res.status(409).json({
+        success: false,
+        message: "Name is already in use by another user",
+      });
+    }
+
+    // Check for duplicate email (exclude current user)
+    const existingEmail = await User.findOne({ email, _id: { $ne: id } });
+    if (existingEmail) {
+      return res.status(409).json({
+        success: false,
+        message: "Email is already in use by another user",
+      });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(id, user, {
       new: true,
     });
@@ -112,12 +132,14 @@ export const loginUser = async (req, res) => {
   });
 };
 
-export const fetchUserById = async (id) => {
+export const fetchUserById = async (req, res) => {
+  const { id } = req.params;
+
   try {
     const user = await User.findById(id);
-    return { success: true, data: user };
+    res.status(200).json({ success: true, data: user });
   } catch (error) {
     console.error("Error in fetching user:", error.message);
-    return { success: false, message: "Error fetching user" };
+    res.status(500).json({ success: false, message: "Error fetching user" });
   }
 };

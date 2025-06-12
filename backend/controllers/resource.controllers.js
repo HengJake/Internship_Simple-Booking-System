@@ -88,20 +88,20 @@ export const createResource = async (req, res) => {
     }
 
     // map through each timeslot
-    resource.availability.map((slot) => {
-      console.log(slot.startTime);
+    // resource.availability.map((slot) => {
+    //   console.log(slot.startTime);
 
-      slot.startTime = convertAvailabilityToUTC(
-        slot.dayOfWeek,
-        slot.startTime
-      );
-      slot.endTime = convertAvailabilityToUTC(
-        slot.dayOfWeek,
-        slot.endTime
-      );
+    //   slot.startTime = convertAvailabilityToUTC(
+    //     slot.dayOfWeek,
+    //     slot.startTime
+    //   );
+    //   slot.endTime = convertAvailabilityToUTC(
+    //     slot.dayOfWeek,
+    //     slot.endTime
+    //   );
 
-      console.log(slot.startTime);
-    });
+    //   console.log(slot.startTime);
+    // });
 
 
     const newResource = new Resource(resource);

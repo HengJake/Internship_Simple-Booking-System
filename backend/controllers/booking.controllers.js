@@ -131,7 +131,6 @@ export const readBooking = async (req, res) => {
 export const createBooking = async (req, res) => {
   const booking = req.body;
 
-
   // Validate required fields
   if (
     !booking.userId ||
@@ -318,13 +317,13 @@ export const deleteBooking = async (req, res) => {
 
 export const readDetailedBooking = async (req, res) => {
   try {
-    const bookings = await Booking.find({})
-      .populate("userId")
-      .populate("resourceId");
+    const bookings = await Booking.find({}).populate("userId").populate("resourceId");
 
     const detailedBookings = await Promise.all(
       bookings.map(async (booking) => {
-        const user = await fetchUserById(booking.userId);
+
+        const user = await User.findById(booking.userId);
+
         const resource = await fetchResourceById(booking.resourceId);
 
         // console.log(user)
