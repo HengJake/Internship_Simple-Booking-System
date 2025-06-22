@@ -16,7 +16,7 @@ import SelectResource from "../component/SelectResource";
 import { useEffect } from "react";
 import {
   convertUTCToMalaysiaTime,
-  convertMalaysiaToUTC,
+  convertMalaysiaToUTCISOString,
   convertToTimeComponents,
   convertUTCToMalaysiaISOString,
 } from "../../../utility/DateTimeConversion";
@@ -40,6 +40,7 @@ function NewBooking() {
     dayOfWeek: "",
     startTime: "",
     endTime: "",
+    dateInNum: "",
   });
 
   // this code run when selectedResource state has change
@@ -65,7 +66,9 @@ function NewBooking() {
         ];
 
         MDateTime.map((isoString) => {
+          // console.log(isoString)
           const [time, date] = convertToTimeComponents(isoString);
+          // console.log(time, date)
 
           // add the date if its not in
           if (!timeslotMap[date]) {
@@ -162,24 +165,17 @@ function NewBooking() {
     return booked.length >= totalAvailable;
   };
 
-  // debug
-  // useEffect(() => {
-  //   console.log("Selected date:", currentDate);
-  //   console.log("Booked Timeslot:", bookedTimeslot[currentDate]);
-  //   console.log(isDateFullyBooked("2025-06-09"));
-  // }, [currentDate, bookedTimeslot]);
-
   return (
     <Container maxW={"container.sm"}>
       <VStack>
-        <Heading as={"h1"} size={"xl"} textAlign={"center"} mb={8}>
+        <Heading as={"h1"} fontSize={"25px"} textAlign={"center"}>
           Add New Booking
         </Heading>
 
         <Box
           w={"full"}
-          bg={useColorModeValue("white", "gray.700")}
-          p={6}
+          bg={useColorModeValue("blue.100", "gray.700")}
+          p={4}
           rounded={"md"}
           shadow={"md"}
         >
@@ -187,7 +183,9 @@ function NewBooking() {
             selectedResource={selectedResource}
             setSelectedResource={setSelectedResource}
           />
-          <Text mb={3}>Room availability</Text>
+          <Text mb={3} fontWeight={800}>
+            Room availability
+          </Text>
           <VStack width={"100%"} align="flex-start">
             <Box display={"flex"} gap={5}>
               <Text fontWeight={700}>Date</Text>
@@ -199,7 +197,12 @@ function NewBooking() {
                 </Text>
               }
             </Box>
-            <HStack justify="flex-start" width={"100%"} overflowX={"auto"}>
+            <HStack
+              justify="flex-start"
+              width={"100%"}
+              overflowX={"auto"}
+              p={3}
+            >
               {getWeekdayDatesBetween(
                 today,
                 twoMonthsLater,
@@ -210,6 +213,8 @@ function NewBooking() {
 
                 return (
                   <Button
+                    bg={"blue.700"}
+                    color={"white"}
                     minW={"fit-content"}
                     key={availableDate}
                     colorScheme={isSelected ? "blue" : "gray"}
@@ -231,8 +236,8 @@ function NewBooking() {
               })}
             </HStack>
             <HStack>
-              <HStack gap={5}>
-                <Text fontWeight={700}>Time</Text>{" "}
+              <HStack gap={5} mt={3}>
+                <Text fontWeight={700}>Time</Text>
                 {newBooking.startTime && newBooking.endTime ? (
                   <Text>{`${newBooking.startTime}  - ${newBooking.endTime}`}</Text>
                 ) : (
@@ -247,11 +252,14 @@ function NewBooking() {
               currentDate ? (
                 selectedResource.availability.map((slot) => {
                   const startTime = convertToTimeComponents(
-                    convertMalaysiaToUTC(slot.dayOfWeek, slot.startTime)
+                    convertUTCToMalaysiaISOString(
+                      slot.dayOfWeek,
+                      slot.startTime
+                    )
                   )[0]; // e.g., "09:00"
 
                   const endTime = convertToTimeComponents(
-                    convertMalaysiaToUTC(slot.dayOfWeek, slot.endTime)
+                    convertUTCToMalaysiaISOString(slot.dayOfWeek, slot.endTime)
                   )[0];
 
                   const isTimeBooked =
@@ -259,6 +267,8 @@ function NewBooking() {
 
                   return (
                     <Button
+                      bg={"blue.700"}
+                      color={"white"}
                       key={slot._id}
                       isDisabled={isTimeBooked}
                       onClick={() => {
@@ -268,6 +278,7 @@ function NewBooking() {
                           dayOfWeek: currentDate,
                           startTime: startTime,
                           endTime: endTime,
+                          dateInNum: slot.dayOfWeek,
                         }));
                       }}
                     >
@@ -284,7 +295,13 @@ function NewBooking() {
               )}
             </HStack>
           </VStack>
-          <Button mt={5} bg={"green.500"} w={"100%"} onClick={handleAddBooking}>
+          <Button
+            color={"white"}
+            mt={5}
+            bg={"blue.500"}
+            w={"100%"}
+            onClick={handleAddBooking}
+          >
             Book
           </Button>
         </Box>

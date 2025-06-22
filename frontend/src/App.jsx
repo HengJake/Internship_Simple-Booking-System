@@ -26,15 +26,21 @@ function App() {
   }, [location.pathname, navigate]);
 
   return (
-    <Box minH={"100vh"}>
+    <Box minH={"100vh"} display={"flex"} flexDirection={"column"} alignItems={"center"}>
       <NavBar />
-      <Routes>
-        <Route path="/" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/newbooking" element={<NewBooking />} />
-        <Route path="/mybooking" element={<MyBooking />} />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
+      <Box
+        h={"100%"}
+        flex={1}
+        display={"flex"}
+      >
+        <Routes>
+          <Route path="/" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/newbooking" element={<NewBooking />} />
+          <Route path="/mybooking" element={<MyBooking />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </Box>
     </Box>
   );
 }

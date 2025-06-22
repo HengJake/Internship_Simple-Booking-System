@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   convertUTCToMalaysiaTime,
   convertMalaysiaTimeISOToUTC,
+  convertMalaysiaToUTCISOString,
 } from "../../../utility/DateTimeConversion";
 import { convertOffsetToTimes } from "framer-motion";
 
@@ -17,14 +18,15 @@ export const useBookingStore = create((set) => ({
       return { success: false, message: "All fields are required" };
     }
 
-    const startDateTime = convertMalaysiaTimeISOToUTC(
-      new Date(
-        `${newBooking.dayOfWeek}T${newBooking.startTime}:00`
-      ).toISOString()
-    ).toISOString();
-    const endDateTime = convertMalaysiaTimeISOToUTC(
-      new Date(`${newBooking.dayOfWeek}T${newBooking.endTime}:00`).toISOString()
-    ).toISOString();
+    const startDateTime = convertMalaysiaToUTCISOString(
+      newBooking.dayOfWeek,
+      newBooking.startTime
+    );
+
+    const endDateTime = convertMalaysiaToUTCISOString(
+      newBooking.dayOfWeek,
+      newBooking.endTime
+    );
 
     newBooking.startTime = startDateTime;
     newBooking.endTime = endDateTime;

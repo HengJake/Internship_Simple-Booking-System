@@ -6,6 +6,8 @@ import {
   HStack,
   Button,
   useColorMode,
+  Box,
+  Icon,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 import { PlusSquareIcon } from "@chakra-ui/icons";
@@ -16,6 +18,7 @@ import { IoIosLogOut } from "react-icons/io";
 import { useLocation } from "react-router-dom";
 import { deleteCookie } from "../../../utility/cookieUtils.js";
 import { useNavigate } from "react-router-dom";
+import { TbBrandBooking } from "react-icons/tb";
 
 function NavBar() {
   const location = useLocation();
@@ -42,16 +45,17 @@ function NavBar() {
           sm: "row",
         }}
       >
-        <Text
-          fontSize={{ base: "22", sm: "28" }}
-          fontWeight={"bold"}
-          textTransform={"uppercase"}
-          textAlign={"center"}
-          bgGradient={"linear(to-r, purple.400, blue.500)"}
-          bgClip={"text"}
-        >
-          <Link to={atSignup ? "" : "/mybooking"}>Simple Book</Link>
-        </Text>
+        <Box textAlign="center">
+          <Link to={atSignup ? "#" : "/mybooking"} aria-label="My Booking">
+            <Icon
+              borderRadius={15}
+              as={TbBrandBooking}
+              boxSize={12}
+              bgGradient="linear(to-r, blue.800, blue.600)"
+              color={"white"}
+            />
+          </Link>
+        </Box>
 
         <HStack spacing={2} alignItems={"center"}>
           <Button onClick={toggleColorMode}>

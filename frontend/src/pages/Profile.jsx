@@ -80,8 +80,6 @@ function Profile() {
     }
 
     fetchUser();
-
-    
   };
 
   return (
@@ -91,7 +89,7 @@ function Profile() {
       justifyContent={"center"}
       flexDirection={"column"}
     >
-      <Card bg={"transparent"}>
+      <Card bg={"blue.800"} color={"white"}>
         <CardHeader>
           <Heading size="md">My Profile</Heading>
         </CardHeader>
@@ -147,7 +145,7 @@ function Profile() {
           </Stack>
         </CardBody>
         <CardFooter justify={"center"}>
-          <Button bg={"green.400"} onClick={handleUpdatedUser}>
+          <Button bg={"green.400"} color={"white"} onClick={handleUpdatedUser}>
             Change Details
           </Button>
         </CardFooter>

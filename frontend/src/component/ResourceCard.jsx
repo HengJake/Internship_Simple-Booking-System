@@ -10,10 +10,10 @@ import {
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/react";
 
-export default function ResourceCard({resource}) {
+export default function ResourceCard({ resource }) {
   const week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   return (
-    <Card  bg={useColorModeValue("gray.100", "gray.600")}>
+    <Card bg={"blue.700"} color={"white"} flex={0.5}>
       <CardHeader size={"m"} fontWeight={700} p={5}>
         {resource.name}
       </CardHeader>

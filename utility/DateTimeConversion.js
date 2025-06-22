@@ -1,14 +1,13 @@
 export function convertUTCToMalaysiaISOString(dayOfWeek, timeStr) {
-  // Get today's UTC date
   const now = new Date();
-  const todayDay = now.getUTCDay();
+  const todayDay = now.getUTCDay(); // 0 (Sun) - 6 (Sat)
 
-  // Calculate day difference to the target dayOfWeek
+  // Calculate day difference from today to desired dayOfWeek
   let dayDiff = dayOfWeek - todayDay;
   if (dayDiff < 0) dayDiff += 7;
 
-  // Reference date in UTC for the target day
-  const baseDate = new Date(
+  // Create a UTC base date for the correct day
+  const baseUtcDate = new Date(
     Date.UTC(
       now.getUTCFullYear(),
       now.getUTCMonth(),
@@ -16,58 +15,47 @@ export function convertUTCToMalaysiaISOString(dayOfWeek, timeStr) {
     )
   );
 
-  // Parse "HH:mm"
-  const [hoursStr, minutesStr] = timeStr.split(":");
-  const utcHours = parseInt(hoursStr, 10);
-  const utcMinutes = parseInt(minutesStr, 10);
-
   // Set UTC time
-  baseDate.setUTCHours(utcHours);
-  baseDate.setUTCMinutes(utcMinutes);
-  baseDate.setUTCSeconds(0);
-  baseDate.setUTCMilliseconds(0);
+  const [hour, minute] = timeStr.split(":").map(Number);
+  baseUtcDate.setUTCHours(hour, minute, 0, 0);
 
-  // Add 8 hours to convert to Malaysia time
-  const malaysiaDate = new Date(baseDate.getTime() + 8 * 60 * 60 * 1000);
+  // Use Intl.DateTimeFormat to format as Malaysia time
+  const malaysiaTimeParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kuala_Lumpur",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(baseUtcDate);
 
-  // Return ISO string (in UTC timezone)
-  return new Date(malaysiaDate.toISOString()); // this will be in UTC format
+  const parts = {};
+  malaysiaTimeParts.forEach(({ type, value }) => {
+    if (type !== "literal") parts[type] = value;
+  });
+
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`;
 }
 
-export function convertMalaysiaToUTC(dayOfWeek, timeStr) {
-  // Get current date in Malaysia Time
-  const now = new Date();
-  const malaysiaOffsetMs = 8 * 60 * 60 * 1000;
+// convert Malaysia YYYY-MM-DD, [09:00] to UTC ISOString
+export function convertMalaysiaToUTCISOString(dateStr, timeStr) {
+  console.log(dateStr, timeStr);
 
-  // Get current day in Malaysia time
-  const malaysiaNow = new Date(now.getTime() + malaysiaOffsetMs);
-  const currentMalaysiaDay = malaysiaNow.getUTCDay();
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const [hours, minutes] = timeStr.split(":").map(Number);
 
-  // Calculate how many days to add to get to target dayOfWeek
-  let dayDiff = dayOfWeek - currentMalaysiaDay;
-  if (dayDiff < 0) dayDiff += 7;
+  // Create Date object as if it's Malaysia local time (UTC+8)
+  const malaysiaTimeAsUTC  = Date.UTC(year, month - 1, day, hours, minutes, 0);
 
-  // Create base date in Malaysia time (UTC +8)
-  const targetMalaysiaDate = new Date(
-    malaysiaNow.getUTCFullYear(),
-    malaysiaNow.getUTCMonth(),
-    malaysiaNow.getUTCDate() + dayDiff
-  );
+  // Convert to UTC ISO string by subtracting 8 hours (in milliseconds)
+  const utcDate = new Date(malaysiaTimeAsUTC - 8 * 60 * 60 * 1000);
 
-  // Parse timeStr ("HH:mm") and apply it in Malaysia time
-  const [hoursStr, minutesStr] = timeStr.split(":");
-  targetMalaysiaDate.setHours(parseInt(hoursStr, 10));
-  targetMalaysiaDate.setMinutes(parseInt(minutesStr, 10));
-  targetMalaysiaDate.setSeconds(0);
-  targetMalaysiaDate.setMilliseconds(0);
-
-  // Convert Malaysia time to UTC by subtracting 8 hours
-  const utcDate = new Date(targetMalaysiaDate.getTime() - malaysiaOffsetMs);
-
-  // Return as ISO 8601 string
-  return utcDate.toISOString();
+  return utcDate.toISOString(); // in UTC with Z
 }
 
+// convert Malaysian ISOString to UTC Date Object
 export function convertMalaysiaTimeISOToUTC(isoStringMYT) {
   // Parse the input as if it's in Malaysia Time (UTC+8)
   const localDate = new Date(isoStringMYT);
@@ -78,29 +66,26 @@ export function convertMalaysiaTimeISOToUTC(isoStringMYT) {
   return utcDate;
 }
 
+// convert Malaysian Date Object to UTC Date object
 export function convertMalaysiaTimeToUTC(utcDate) {
   const malaysiaOffset = 8 * 60; // +8 hours in minutes
   return new Date(utcDate.getTime() - malaysiaOffset * 60 * 1000);
 }
 
+// convert UTC Date Object to Malaysia Date object
 export function convertUTCToMalaysiaTime(utcDate) {
   const malaysiaOffset = 8 * 60; // +8 hours in minutes
   return new Date(utcDate.getTime() + malaysiaOffset * 60 * 1000);
 }
 
+// convert Malaysian isoString to [00:00, YYYY-MM-DD]
 export function convertToTimeComponents(isoString) {
-  const date = new Date(isoString);
-  // Convert to Malaysia time (UTC+8)
-  const malaysiaDate = new Date(date.getTime());
+  // Split date and time parts manually to avoid timezone shifts
+  const [datePart, timePart] = isoString.split("T");
+  const [hours, minutes] = timePart.split(":");
 
-  const hours = malaysiaDate.getHours().toString().padStart(2, "0");
-  const minutes = malaysiaDate.getMinutes().toString().padStart(2, "0");
   const time = `${hours}:${minutes}`;
+  const date = datePart;
 
-  const year = malaysiaDate.getFullYear();
-  const month = (malaysiaDate.getMonth() + 1).toString().padStart(2, "0");
-  const day = malaysiaDate.getDate().toString().padStart(2, "0");
-  const dateStr = `${year}-${month}-${day}`;
-
-  return [time, dateStr];
+  return [time, date];
 }

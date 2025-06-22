@@ -51,11 +51,11 @@ function SelectResource({ selectedResource, setSelectedResource }) {
     <Box
       minH={"100px"}
       className="selectResource"
-      p={5}
       position={"relative"}
       w={"100%"}
       display={"flex"}
       justifyContent={"center"}
+      mb={3}
     >
       <Button
         className="selectResource__button left"
@@ -64,10 +64,14 @@ function SelectResource({ selectedResource, setSelectedResource }) {
         top={"50%"}
         transform="translateY(-50%)"
         onClick={prevResource}
+        bg={"blue.700"}
+        color={"white"}
       >
         <FaChevronCircleLeft />
       </Button>
       <Button
+        bg={"blue.700"}
+        color={"white"}
         className="selectResource__button right"
         position={"absolute"}
         right={5}
@@ -77,10 +81,7 @@ function SelectResource({ selectedResource, setSelectedResource }) {
       >
         <FaChevronCircleRight />
       </Button>
-      <ResourceCard
-        key={resources[index]._id}
-        resource={resources[index]}
-      ></ResourceCard>
+      <ResourceCard key={resources[index]._id} resource={resources[index]} />
     </Box>
   );
 }
