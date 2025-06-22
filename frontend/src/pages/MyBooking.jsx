@@ -9,12 +9,25 @@ import {
   Select,
 } from "@chakra-ui/react";
 import { useBookingStore } from "../store/booking";
-import { Link as RouterLink } from "react-router-dom";
+import { Link, Link as RouterLink } from "react-router-dom";
 import BookingCard from "../component/BookingCard";
 import { getCookie } from "../../../utility/cookieUtils";
 import { useState } from "react";
+import { useColorModeValue } from "@chakra-ui/react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+  Button,
+} from "@chakra-ui/react";
 
 function MyBooking() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const UID = getCookie("UID");
   const { getBooking, bookings } = useBookingStore();
   useEffect(() => {
@@ -48,6 +61,12 @@ function MyBooking() {
     return sortOrder === "asc" ? result : -result;
   });
 
+  const headingColor = useColorModeValue("blue.900", "blue.200");
+
+  useEffect(() => {
+    onOpen();
+  }, [onOpen]);
+
   return (
     <Box
       w={"100%"}
@@ -58,7 +77,9 @@ function MyBooking() {
       justifyContent={"start"}
       alignItems={"start"}
     >
-      <Heading mb={10} color={"blue.900"}>My Booking</Heading>
+      <Heading mb={10} color={headingColor}>
+        My Booking
+      </Heading>
 
       {sortedBookings.length === 0 ? (
         <Text>
@@ -90,13 +111,36 @@ function MyBooking() {
             </Select>
           </HStack>
 
-          <SimpleGrid columns={Math.min(sortedBookings.length, 3)} spacing={5}>
+          <SimpleGrid columns={{ base: 1, sm: 2, md: 2, lg: 3 }} spacing={5}>
             {sortedBookings.map((booking) => (
               <BookingCard key={booking._id} booking={booking}></BookingCard>
             ))}
           </SimpleGrid>
         </Box>
       )}
+
+      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Welcome to my side project!</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Your feedback is appreciated 😁</Text>
+            <Text as={"small"}>Contact me under "contact"</Text>
+            <ChakraLink
+              href="https://hengjake.github.io/JunKai-Portfolio/"
+              isExternal
+              color="blue.500"
+              display={"block"}
+            >
+              Visit website
+            </ChakraLink>
+            <Button mt={4} onClick={onClose} colorScheme="blue">
+              Got it
+            </Button>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

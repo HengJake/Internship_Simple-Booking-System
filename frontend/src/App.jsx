@@ -26,7 +26,7 @@ function App() {
   }, [location.pathname, navigate]);
 
   return (
-    <Box minH={"100vh"} display={"flex"} flexDirection={"column"} alignItems={"center"}>
+    <Box minH={"100vh"} display={"flex"} flexDirection={"column"} >
       <NavBar />
       <Box
         h={"100%"}

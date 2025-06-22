@@ -40,10 +40,7 @@ function NavBar() {
         h={16}
         alignItems={"center"}
         justifyContent={"space-between"}
-        flexDir={{
-          base: "column",
-          sm: "row",
-        }}
+        flexDir="row"
       >
         <Box textAlign="center">
           <Link to={atSignup ? "#" : "/mybooking"} aria-label="My Booking">

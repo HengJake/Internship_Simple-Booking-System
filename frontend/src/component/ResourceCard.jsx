@@ -13,7 +13,11 @@ import { useColorModeValue } from "@chakra-ui/react";
 export default function ResourceCard({ resource }) {
   const week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   return (
-    <Card bg={"blue.700"} color={"white"} flex={0.5}>
+    <Card
+      bg={"blue.700"}
+      color={"white"}
+      flex={{ base: 1, md: 0.5, lg: 0.5 }}
+    >
       <CardHeader size={"m"} fontWeight={700} p={5}>
         {resource.name}
       </CardHeader>

@@ -64,13 +64,14 @@ function SelectResource({ selectedResource, setSelectedResource }) {
         top={"50%"}
         transform="translateY(-50%)"
         onClick={prevResource}
-        bg={"blue.700"}
+        bg={{base : "transparent", md : "blue.700", lg : "blue.700"}}
         color={"white"}
+        zIndex={10}
       >
         <FaChevronCircleLeft />
       </Button>
       <Button
-        bg={"blue.700"}
+        bg={{base : "transparent", md : "blue.700", lg : "blue.700"}}
         color={"white"}
         className="selectResource__button right"
         position={"absolute"}
@@ -78,6 +79,7 @@ function SelectResource({ selectedResource, setSelectedResource }) {
         top={"50%"}
         transform="translateY(-50%)"
         onClick={nextResource}
+        zIndex={10}
       >
         <FaChevronCircleRight />
       </Button>

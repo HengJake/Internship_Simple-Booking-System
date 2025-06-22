@@ -166,7 +166,7 @@ function NewBooking() {
   };
 
   return (
-    <Container maxW={"container.sm"}>
+    <Container w="100%">
       <VStack>
         <Heading as={"h1"} fontSize={"25px"} textAlign={"center"}>
           Add New Booking
@@ -183,9 +183,11 @@ function NewBooking() {
             selectedResource={selectedResource}
             setSelectedResource={setSelectedResource}
           />
+
           <Text mb={3} fontWeight={800}>
             Room availability
           </Text>
+
           <VStack width={"100%"} align="flex-start">
             <Box display={"flex"} gap={5}>
               <Text fontWeight={700}>Date</Text>
@@ -235,6 +237,7 @@ function NewBooking() {
                 );
               })}
             </HStack>
+
             <HStack>
               <HStack gap={5} mt={3}>
                 <Text fontWeight={700}>Time</Text>
@@ -245,6 +248,7 @@ function NewBooking() {
                 )}
               </HStack>
             </HStack>
+
             <HStack justify="flex-start" width={"100%"}>
               {selectedResource &&
               (bookedTimeslot[currentDate] ||
@@ -295,6 +299,7 @@ function NewBooking() {
               )}
             </HStack>
           </VStack>
+
           <Button
             color={"white"}
             mt={5}
