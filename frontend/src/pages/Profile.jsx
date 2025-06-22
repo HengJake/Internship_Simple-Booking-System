@@ -88,6 +88,7 @@ function Profile() {
       alignItems={"center"}
       justifyContent={"center"}
       flexDirection={"column"}
+      margin={"0 auto"}
     >
       <Card bg={"blue.800"} color={"white"}>
         <CardHeader>
